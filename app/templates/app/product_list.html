@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listagem de Produtos</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            /* Centraliza o conteúdo das células */
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .add-product-button {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0; /* Ajuste a margem conforme necessário */
+        }
+
+        .pagination ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+        }
+
+        .pagination ul li {
+            margin: 0 5px;
+        }
+
+        .pagination ul li button {
+            padding: 8px 12px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .pagination ul li button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .pagination ul li.active button {
+            background-color: #0056b3;
+        }
+
+        .pagination ul li.disabled button {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Listagem de Produtos</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome do Produto</th>
+                <th>Descrição</th>
+                <th> Valor
+                    <a href="?sort=asc"><i class="fas fa-arrow-up"></i>
+                    </a> 
+                    <a href="?sort=desc"><i class="fas fa-arrow-down"></i>
+                    </a>
+                </th>
+                <th>Disponível para Venda</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in page_obj.object_list %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.description }}</td>
+                <td>R$ {{ product.price }}</td>
+                <td>{{ product.available|yesno:"Sim,Não" }}</td>
+                <td>
+                    <a href="{% url 'product_update' product.pk %}">Editar</a>
+                    <a href="{% url 'product_delete' product.pk %}">Excluir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+    <div class="pagination">
+        <ul>
+            {% if page_obj.has_previous %}
+            <li>
+                <form method="get">
+                    <input type="hidden" name="page" value="1">
+                    <input type="hidden" name="sort" value="{{ sort_by }}">
+                    <button type="submit">Primeira</button>
+                </form>
+            </li>
+            <li>
+                <form method="get">
+                    <input type="hidden" name="page" value="{{ page_obj.previous_page_number }}">
+                    <input type="hidden" name="sort" value="{{ sort_by }}">
+                    <button type="submit">&laquo; Anterior</button>
+                </form>
+            </li>
+            {% else %}
+            <li class="disabled"><button>Primeira</button></li>
+            <li class="disabled"><button>&laquo; Anterior</button></li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="active"><button>{{ num }}</button></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li>
+                <form method="get">
+                    <input type="hidden" name="page" value="{{ num }}">
+                    <input type="hidden" name="sort" value="{{ sort_by }}">
+                    <button type="submit">{{ num }}</button>
+                </form>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li>
+                    <form method="get">
+                        <input type="hidden" name="page" value="{{ page_obj.next_page_number }}">
+                        <input type="hidden" name="sort" value="{{ sort_by }}">
+                        <button type="submit">Próxima &raquo;</button>
+                    </form>
+                </li>
+                <li>
+                    <form method="get">
+                        <input type="hidden" name="page" value="{{ page_obj.paginator.num_pages }}">
+                        <input type="hidden" name="sort" value="{{ sort_by }}">
+                        <button type="submit">Última</button>
+                    </form>
+                </li>
+                {% else %}
+                <li class="disabled"><button>Próxima &raquo;</button></li>
+                <li class="disabled"><button>Última</button></li>
+                {% endif %}
+        </ul>
+    </div>
+    <div class="add-product-button">
+        <a href="{% url 'product_create' %}">
+            <button>Adicionar Produto</button>
+        </a>
+    </div>
+</html>
